@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لعبة المطابقة للأطفال</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+  }
+  h1 {
+    color: #4a6fa5;
+  }
+  .levels button {
+    margin: 10px;
+    padding: 10px 18px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background: #cfe3dc;
+    cursor: pointer;
+  }
+  .game {
+    display: grid;
+    gap: 12px;
+    max-width: 420px;
+    margin: 20px auto;
+  }
+  .card {
+    background: #cfe3dc;
+    border-radius: 12px;
+    height: 90px;
+    font-size: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card.flipped {
+    background: #ffffff;
+  }
+  .message {
+    font-size: 20px;
+    color: #5a7d6c;
+    margin-top: 15px;
+  }
+</style>
+</head>
+<body>
+
+<h1>لعبة المطابقة 🌸</h1>
+<p>اختاري المستوى</p>
+
+<div class="levels">
+  <button onclick="startGame(6)">👧 مستوى 6 سنوات</button>
+  <button onclick="startGame(9)">👧 مستوى 9 سنوات</button>
+</div>
+
+<div class="game" id="game"></div>
+<div class="message" id="message"></div>
+
+<script>
+const allSymbols = {
+  6: ["🍎","🍎","🐱","🐱","⭐","⭐","🌙","🌙"],
+  9: ["🍎","🍎","🐱","🐱","⭐","⭐","🌙","🌙","🍓","🍓","🐶","🐶"]
+};
+
+let first = null;
+let lock = false;
+let matches = 0;
+
+function startGame(age) {
+  const game = document.getElementById("game");
+  const message = document.getElementById("message");
+  game.innerHTML = "";
+  message.innerText = "";
+  first = null;
+  lock = false;
+  matches = 0;
+
+  const symbols = allSymbols[age].sort(() => 0.5 - Math.random());
+  game.style.gridTemplateColumns = "repeat(4, 1fr)";
+
+  symbols.forEach(sym => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.symbol = sym;
+    card.innerHTML = "❓";
+    card.onclick = () => {
+      if (lock || card.classList.contains("flipped")) return;
+      card.classList.add("flipped");
+      card.innerHTML = sym;
+      if (!first) {
+        first = card;
+      } else {
+        if (first.dataset.symbol === sym) {
+          matches++;
+          first = null;
+          if (matches === symbols.length / 2) {
+            message.innerText = "شطورررة! 🎉";
+          }
+        } else {
+          lock = true;
+          setTimeout(() => {
+            first.classList.remove("flipped");
+            card.classList.remove("flipped");
+            first.innerHTML = "❓";
+            card.innerHTML = "❓";
+            first = null;
+            lock = false;
+          }, 800);
+        }
+      }
+    };
+    game.appendChild(card);
+  });
+}
+</script>
+
+</body>
+</html>
