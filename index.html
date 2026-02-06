@@ -1,126 +1,441 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>لعبة المطابقة للأطفال</title>
 <style>
-  body {
+  :root{
+    --bg:#f4f7f6;
+    --accent:#4a6fa5;
+    --cardBack:#cfe3dc;
+    --cardFront:#ffffff;
+    --text:#2b3a44;
+    --good:#2e7d32;
+    --bad:#c62828;
+    --gap:12px;
+    --cardSize:92px; /* سيتم تحديثه تلقائياً */
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
     font-family: Arial, sans-serif;
-    background: #f4f7f6;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
+    background: var(--bg);
+    margin:0;
+    padding: 16px 14px 28px;
+    text-align:center;
+    color:var(--text);
   }
-  h1 {
-    color: #4a6fa5;
+
+  h1{ color:var(--accent); margin: 6px 0 4px; font-size: 28px; }
+  .sub{ margin: 6px 0 14px; opacity:0.9; }
+
+  .panel{
+    max-width: 720px;
+    margin: 0 auto 10px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.75);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
   }
-  .levels button {
-    margin: 10px;
-    padding: 10px 18px;
-    font-size: 18px;
-    border: none;
+
+  .row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+    margin: 8px 0;
+  }
+
+  label{
+    font-size: 15px;
+    opacity: 0.9;
+  }
+
+  select, button{
+    font-size: 16px;
     border-radius: 10px;
-    background: #cfe3dc;
-    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 10px 12px;
+    background: #fff;
   }
-  .game {
-    display: grid;
-    gap: 12px;
-    max-width: 420px;
-    margin: 20px auto;
+
+  button{
+    border:none;
+    cursor:pointer;
+    background: var(--cardBack);
+    padding: 10px 14px;
   }
-  .card {
-    background: #cfe3dc;
-    border-radius: 12px;
-    height: 90px;
-    font-size: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
+
+  .topbar{
+    max-width: 720px;
+    margin: 0 auto 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.75);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
   }
-  .card.flipped {
-    background: #ffffff;
+
+  .score{
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    display:flex;
+    align-items:center;
+    gap:8px;
   }
-  .message {
-    font-size: 20px;
-    color: #5a7d6c;
-    margin-top: 15px;
+  .score span{
+    display:inline-block;
+    min-width: 60px;
+    text-align:center;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: #e9f0ff;
+    color: var(--accent);
+  }
+
+  .game{
+    width: 100%;
+    max-width: 720px;
+    margin: 8px auto 6px;
+    display:grid;
+    gap: var(--gap);
+    padding: 10px;
+  }
+
+  /* Card with flip animation */
+  .card{
+    height: var(--cardSize);
+    perspective: 900px;
+  }
+  .cardInner{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 420ms ease;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .card.flipped .cardInner{ transform: rotateY(180deg); }
+
+  .cardFace{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius: 14px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    user-select:none;
+  }
+  .cardBack{
+    background: var(--cardBack);
+    font-size: calc(var(--cardSize) * 0.40);
+  }
+  .cardFront{
+    background: var(--cardFront);
+    transform: rotateY(180deg);
+    font-size: calc(var(--cardSize) * 0.44);
+  }
+
+  .message{
+    max-width: 720px;
+    margin: 8px auto 0;
+    font-size: 18px;
+    min-height: 24px;
+  }
+  .message.good{ color: var(--good); }
+  .message.bad{ color: var(--bad); }
+
+  .hint{
+    font-size: 13px;
+    opacity: 0.78;
+    margin-top: 6px;
+  }
+
+  .footerNote{
+    font-size: 12px;
+    opacity: 0.65;
+    margin-top: 14px;
   }
 </style>
 </head>
 <body>
 
 <h1>لعبة المطابقة 🌸</h1>
-<p>اختاري المستوى</p>
+<div class="sub">اختاري نوع الصور ومستوى الصعوبة، ثم ابدئي اللعب</div>
 
-<div class="levels">
-  <button onclick="startGame(6)">👧 مستوى 6 سنوات</button>
-  <button onclick="startGame(9)">👧 مستوى 9 سنوات</button>
+<div class="panel" id="setupPanel">
+  <div class="row">
+    <label for="category">نوع الصور:</label>
+    <select id="category">
+      <option value="fruits">🍎 فواكه</option>
+      <option value="emoji">😊 إيموجي</option>
+      <option value="cartoon">🧸 شخصيات كرتونية (رموز لطيفة)</option>
+      <option value="random">🎲 عشوائية</option>
+      <option value="flags">🏳️ أعلام دول</option>
+      <option value="numbers">🔢 أرقام إنجليزية</option>
+      <option value="arabicLetters">🔤 حروف عربية (اقتراح)</option>
+    </select>
+
+    <label for="difficulty">الصعوبة:</label>
+    <select id="difficulty">
+      <option value="easy">سهل (8 مربعات)</option>
+      <option value="medium">متوسط (12 مربع)</option>
+      <option value="hard">صعب (16 مربع)</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <button id="startBtn">ابدأ اللعب ▶️</button>
+    <button id="shuffleBtn" title="غيّر ترتيب الصور">تغيير عشوائي 🔄</button>
+  </div>
+
+  <div class="hint">النقاط: +10 عند التطابق ✅ | -10 عند الخطأ ❌</div>
+</div>
+
+<div class="topbar">
+  <div class="score">⭐ النقاط: <span id="score">0</span></div>
+  <div class="row" style="margin:0; gap:8px;">
+    <button id="restartBtn">إعادة</button>
+  </div>
 </div>
 
 <div class="game" id="game"></div>
 <div class="message" id="message"></div>
+<div class="footerNote">تلميح: جرّبي الوضع الأفقي على الآيباد لعرض أجمل 💛</div>
 
 <script>
-const allSymbols = {
-  6: ["🍎","🍎","🐱","🐱","⭐","⭐","🌙","🌙"],
-  9: ["🍎","🍎","🐱","🐱","⭐","⭐","🌙","🌙","🍓","🍓","🐶","🐶"]
+/* ========= بيانات الرموز ========= */
+const POOLS = {
+  fruits: ["🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🫐","🍒","🥭","🍍","🥝","🍑","🍈","🥥"],
+  emoji: ["😊","😂","😍","😎","🤩","🥳","😴","🤔","😇","😺","🙃","😜","🤗","😮","😡","😭"],
+  cartoon: ["🐱","🐶","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐸","🐵","🐷","🦄","🐙","🧞","🧚"],
+  flags: ["🇸🇦","🇦🇪","🇶🇦","🇰🇼","🇧🇭","🇴🇲","🇯🇴","🇪🇬","🇲🇦","🇹🇳","🇩🇿","🇹🇷","🇬🇧","🇫🇷","🇩🇪","🇺🇸"],
+  numbers: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],
+  arabicLetters: ["أ","ب","ت","ث","ج","ح","خ","د","ذ","ر","ز","س","ش","ص","ض","ط","ظ","ع","غ","ف","ق","ك","ل","م","ن","هـ","و","ي"]
 };
 
+function getPool(category){
+  if(category === "random"){
+    // دمج مجموعة مختارة حتى تكون لطيفة ومتنوعة
+    const mix = []
+      .concat(POOLS.fruits.slice(0,12))
+      .concat(POOLS.emoji.slice(0,12))
+      .concat(POOLS.cartoon.slice(0,12))
+      .concat(POOLS.flags.slice(0,12))
+      .concat(POOLS.numbers.slice(0,12))
+      .concat(POOLS.arabicLetters.slice(0,12));
+    // إزالة التكرار إن وجد (احتياط)
+    return [...new Set(mix)];
+  }
+  return POOLS[category] || POOLS.fruits;
+}
+
+const DIFFICULTY = {
+  easy: 8,    // 4 أزواج
+  medium: 12, // 6 أزواج
+  hard: 16    // 8 أزواج
+};
+
+/* ========= حالة اللعبة ========= */
 let first = null;
 let lock = false;
 let matches = 0;
+let score = 0;
+let totalCards = 0;
+let currentDeck = [];
+let currentCategory = "fruits";
+let currentDifficulty = "easy";
 
-function startGame(age) {
-  const game = document.getElementById("game");
-  const message = document.getElementById("message");
-  game.innerHTML = "";
-  message.innerText = "";
-  first = null;
-  lock = false;
-  matches = 0;
+const gameEl = document.getElementById("game");
+const msgEl = document.getElementById("message");
+const scoreEl = document.getElementById("score");
 
-  const symbols = allSymbols[age].sort(() => 0.5 - Math.random());
-  game.style.gridTemplateColumns = "repeat(4, 1fr)";
+/* ========= أدوات مساعدة ========= */
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
-  symbols.forEach(sym => {
+function setMessage(text, kind=null){
+  msgEl.className = "message" + (kind ? " " + kind : "");
+  msgEl.textContent = text || "";
+}
+
+function setScore(val){
+  score = Math.max(0, val);
+  scoreEl.textContent = score;
+}
+
+/* ========= تخطيط الشبكة تلقائيًا ========= */
+function computeGrid(n){
+  // نجرّب عدد أعمدة مختلف ونختار الأقرب لبطاقات مربعة
+  const gap = 12;
+  const w = Math.min(window.innerWidth - 28, 720); // عرض مناسب
+  const h = Math.max(360, window.innerHeight - 320); // مساحة تقريبية للشبكة
+  let best = {cols:4, rows: Math.ceil(n/4), size: 84, score: 1e9};
+
+  for(let cols=2; cols<=6; cols++){
+    const rows = Math.ceil(n/cols);
+    const cellW = (w - gap*(cols-1) - 20) / cols;
+    const cellH = (h - gap*(rows-1) - 20) / rows;
+    const size = Math.floor(Math.max(58, Math.min(cellW, cellH))); // لا تكون صغيرة جدًا
+    const ratio = cellW / cellH;
+    const ratioScore = Math.abs(1 - ratio); // نريد قريب من 1
+    const sizePenalty = size < 64 ? 0.25 : 0; // تجنّب الصغر
+    const score = ratioScore + sizePenalty + (cols>4 ? 0.05 : 0); // تفضيل أعمدة أقل قليلًا
+    if(score < best.score){
+      best = {cols, rows, size, score};
+    }
+  }
+  return best;
+}
+
+function applyGrid(n){
+  const g = computeGrid(n);
+  gameEl.style.gridTemplateColumns = `repeat(${g.cols}, 1fr)`;
+  document.documentElement.style.setProperty("--cardSize", `${g.size}px`);
+}
+
+/* ========= بناء اللعبة ========= */
+function buildDeck(category, difficulty){
+  const n = DIFFICULTY[difficulty] || 8;
+  const pairs = n / 2;
+
+  const pool = getPool(category);
+  const picked = shuffle(pool).slice(0, pairs);
+  const deck = shuffle(picked.concat(picked)); // زوجين
+  return { deck, n };
+}
+
+function renderBoard(deck){
+  gameEl.innerHTML = "";
+  deck.forEach(sym => {
     const card = document.createElement("div");
     card.className = "card";
     card.dataset.symbol = sym;
-    card.innerHTML = "❓";
-    card.onclick = () => {
-      if (lock || card.classList.contains("flipped")) return;
-      card.classList.add("flipped");
-      card.innerHTML = sym;
-      if (!first) {
-        first = card;
-      } else {
-        if (first.dataset.symbol === sym) {
-          matches++;
-          first = null;
-          if (matches === symbols.length / 2) {
-            message.innerText = "شطورررة! 🎉";
-          }
-        } else {
-          lock = true;
-          setTimeout(() => {
-            first.classList.remove("flipped");
-            card.classList.remove("flipped");
-            first.innerHTML = "❓";
-            card.innerHTML = "❓";
-            first = null;
-            lock = false;
-          }, 800);
-        }
-      }
-    };
-    game.appendChild(card);
+
+    const inner = document.createElement("div");
+    inner.className = "cardInner";
+
+    const back = document.createElement("div");
+    back.className = "cardFace cardBack";
+    back.textContent = "❓";
+
+    const front = document.createElement("div");
+    front.className = "cardFace cardFront";
+    front.textContent = sym;
+
+    inner.appendChild(back);
+    inner.appendChild(front);
+    card.appendChild(inner);
+
+    card.addEventListener("click", () => handleFlip(card));
+    gameEl.appendChild(card);
   });
 }
+
+function startGame(){
+  first = null;
+  lock = false;
+  matches = 0;
+  setScore(0);
+  setMessage("");
+
+  const { deck, n } = buildDeck(currentCategory, currentDifficulty);
+  currentDeck = deck;
+  totalCards = n;
+
+  applyGrid(totalCards);
+  renderBoard(currentDeck);
+}
+
+/* ========= منطق اللعب + النقاط ========= */
+function handleFlip(card){
+  if (lock || card.classList.contains("matched") || card.classList.contains("flipped")) return;
+
+  card.classList.add("flipped");
+
+  if(!first){
+    first = card;
+    return;
+  }
+
+  const second = card;
+
+  if(first.dataset.symbol === second.dataset.symbol){
+    first.classList.add("matched");
+    second.classList.add("matched");
+    first = null;
+    matches++;
+    setScore(score + 10);
+    setMessage("ممتاز! ✅ +10", "good");
+
+    if(matches === totalCards / 2){
+      setMessage(`شطورررة! 🎉 خلصتي اللعبة! مجموعك: ${score}`, "good");
+    }
+  } else {
+    lock = true;
+    setScore(score - 10);
+    setMessage("قريب! ❌ -10 جرّبي مرة ثانية", "bad");
+
+    setTimeout(() => {
+      first.classList.remove("flipped");
+      second.classList.remove("flipped");
+      first = null;
+      lock = false;
+      setMessage("");
+    }, 900);
+  }
+}
+
+/* ========= ربط الأزرار ========= */
+const categoryEl = document.getElementById("category");
+const difficultyEl = document.getElementById("difficulty");
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  currentCategory = categoryEl.value;
+  currentDifficulty = difficultyEl.value;
+  startGame();
+});
+
+document.getElementById("shuffleBtn").addEventListener("click", () => {
+  // فقط يغيّر الترتيب بنفس الإعدادات
+  currentCategory = categoryEl.value;
+  currentDifficulty = difficultyEl.value;
+  startGame();
+});
+
+document.getElementById("restartBtn").addEventListener("click", () => {
+  if(!currentDeck.length){
+    currentCategory = categoryEl.value;
+    currentDifficulty = difficultyEl.value;
+  }
+  startGame();
+});
+
+/* إعادة ضبط التخطيط عند دوران الشاشة */
+window.addEventListener("resize", () => {
+  if(totalCards){
+    applyGrid(totalCards);
+  }
+});
+
+/* تشغيل أولي (اختياري) */
+setMessage("اختاري الإعدادات ثم اضغطي: ابدأ اللعب ▶️");
 </script>
 
 </body>
